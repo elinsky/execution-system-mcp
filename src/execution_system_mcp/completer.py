@@ -6,6 +6,7 @@ from pathlib import Path
 from datetime import date
 
 from execution_system_mcp.config import ConfigManager
+from execution_system_mcp.utils import git_move
 
 
 class ProjectCompleter:
@@ -295,18 +296,18 @@ class ProjectCompleter:
         # Generate new frontmatter
         new_frontmatter = self.generate_frontmatter_yaml(frontmatter)
 
+        # Update the file in-place with completed date
+        with open(project_path, 'w') as f:
+            f.write(new_frontmatter + body)
+
         # Create completed directory if needed
         repo_path = Path(self._config.get_repo_path())
         completed_base = repo_path / "docs" / "execution_system" / "10k-projects" / "completed"
         completed_area_dir = completed_base / area_kebab
         completed_area_dir.mkdir(parents=True, exist_ok=True)
 
-        # Write to completed folder
+        # Move to completed folder using git mv to preserve history
         completed_path = completed_area_dir / project_path.name
-        with open(completed_path, 'w') as f:
-            f.write(new_frontmatter + body)
-
-        # Delete from active folder
-        project_path.unlink()
+        git_move(project_path, completed_path)
 
         return f"✓ Successfully completed project '{title}'\n  Moved from: {project_path}\n  Moved to: {completed_path}\n  Completed: {date.today()}"

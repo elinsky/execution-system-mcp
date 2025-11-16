@@ -1,13 +1,13 @@
 """Project management functionality for Phase 2."""
 
 import re
-import shutil
 from datetime import date
 from pathlib import Path
 from typing import Literal
 
 from execution_system_mcp.completer import ProjectCompleter
 from execution_system_mcp.config import ConfigManager
+from execution_system_mcp.utils import git_move
 
 
 class ProjectManager:
@@ -169,8 +169,8 @@ class ProjectManager:
 
         target_file = active_dir / project_file.name
 
-        # Move file
-        shutil.move(str(project_file), str(target_file))
+        # Move file using git mv to preserve history
+        git_move(project_file, target_file)
 
         # Add started date
         today = date.today().isoformat()
@@ -211,8 +211,8 @@ class ProjectManager:
 
         target_file = incubator_dir / project_file.name
 
-        # Move file
-        shutil.move(str(project_file), str(target_file))
+        # Move file using git mv to preserve history
+        git_move(project_file, target_file)
 
         # Remove started date
         self._update_frontmatter(target_file, {}, removals=["started"])
@@ -252,8 +252,8 @@ class ProjectManager:
 
         target_file = descoped_dir / project_file.name
 
-        # Move file
-        shutil.move(str(project_file), str(target_file))
+        # Move file using git mv to preserve history
+        git_move(project_file, target_file)
 
         # Add descoped date and remove started
         today = date.today().isoformat()
@@ -326,8 +326,8 @@ class ProjectManager:
 
         target_file = target_dir / project_file.name
 
-        # Move file
-        shutil.move(str(project_file), str(target_file))
+        # Move file using git mv to preserve history
+        git_move(project_file, target_file)
 
         # Update area in YAML
         self._update_frontmatter(target_file, {"area": new_area})
