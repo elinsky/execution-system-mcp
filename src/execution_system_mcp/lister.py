@@ -28,7 +28,7 @@ class ProjectLister:
             file_path: Path to project markdown file
 
         Returns:
-            Dict with area, title, type, due, completed, started, created fields
+            Dict with area, title, type, due, completed, started, created, last_reviewed fields
         """
         # Read first 10 lines (YAML frontmatter section)
         with open(file_path, 'r') as f:
@@ -41,7 +41,8 @@ class ProjectLister:
             "due": None,
             "completed": None,
             "started": None,
-            "created": None
+            "created": None,
+            "last_reviewed": None
         }
 
         # Parse YAML fields
@@ -61,6 +62,8 @@ class ProjectLister:
                 result["started"] = line.split(":", 1)[1].strip()
             elif line.startswith("created:"):
                 result["created"] = line.split(":", 1)[1].strip()
+            elif line.startswith("last_reviewed:"):
+                result["last_reviewed"] = line.split(":", 1)[1].strip()
 
         # Use filename as title if not provided
         if not result["title"]:
@@ -237,6 +240,7 @@ class ProjectLister:
         completed_date_preset: Literal["last_week", "last_month", "week_to_date", "month_to_date", "quarter_to_date", "year_to_date"] | None = None,
         filter_completed_start: str | None = None,
         filter_completed_end: str | None = None,
+        days_since_reviewed: int | None = None,
     ) -> dict:
         """
         List projects with flexible filtering and grouping.
@@ -249,6 +253,7 @@ class ProjectLister:
             completed_date_preset: Optional preset date range for completed projects
             filter_completed_start: Optional custom start date for completed projects (YYYY-MM-DD)
             filter_completed_end: Optional custom end date for completed projects (YYYY-MM-DD)
+            days_since_reviewed: Optional filter to show only projects not reviewed in N days (inclusive)
 
         Returns:
             Dict with structure:
@@ -335,6 +340,27 @@ class ProjectLister:
                     except ValueError:
                         # Invalid date format, skip
                         continue
+            all_projects = filtered_projects
+
+        # Apply review date filter
+        if days_since_reviewed is not None:
+            today = date.today()
+            filtered_projects = []
+            for p in all_projects:
+                last_reviewed = p.get("last_reviewed")
+
+                # Include if missing last_reviewed OR if not reviewed recently enough
+                if not last_reviewed:
+                    filtered_projects.append(p)
+                else:
+                    try:
+                        review_date = datetime.strptime(last_reviewed, "%Y-%m-%d").date()
+                        days_diff = (today - review_date).days
+                        if days_diff >= days_since_reviewed:
+                            filtered_projects.append(p)
+                    except ValueError:
+                        # Invalid date format, include it (needs attention)
+                        filtered_projects.append(p)
             all_projects = filtered_projects
 
         # Apply filters

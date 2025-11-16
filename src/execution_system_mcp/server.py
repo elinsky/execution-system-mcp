@@ -108,7 +108,7 @@ def list_projects_handler(params: dict, config_path: str | None = None) -> str:
     Handle list_projects tool invocation.
 
     Args:
-        params: Tool parameters (folder, group_by, filter_area, filter_has_due, completed_date_preset, filter_completed_start, filter_completed_end)
+        params: Tool parameters (folder, group_by, filter_area, filter_has_due, completed_date_preset, filter_completed_start, filter_completed_end, days_since_reviewed)
         config_path: Optional path to config file (for testing)
 
     Returns:
@@ -129,6 +129,7 @@ def list_projects_handler(params: dict, config_path: str | None = None) -> str:
         completed_date_preset = params.get("completed_date_preset")
         filter_completed_start = params.get("filter_completed_start")
         filter_completed_end = params.get("filter_completed_end")
+        days_since_reviewed = params.get("days_since_reviewed")
 
         # List projects
         result = lister.list_projects(
@@ -138,7 +139,8 @@ def list_projects_handler(params: dict, config_path: str | None = None) -> str:
             filter_has_due=filter_has_due,
             completed_date_preset=completed_date_preset,
             filter_completed_start=filter_completed_start,
-            filter_completed_end=filter_completed_end
+            filter_completed_end=filter_completed_end,
+            days_since_reviewed=days_since_reviewed
         )
 
         # Return as JSON string
@@ -936,6 +938,10 @@ async def main():
                             "type": "string",
                             "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
                             "description": "Optional: custom end date for completed projects filter (YYYY-MM-DD), requires filter_completed_start"
+                        },
+                        "days_since_reviewed": {
+                            "type": "integer",
+                            "description": "Optional: filter to show only projects not reviewed in N days (inclusive). Projects with missing last_reviewed dates are included."
                         }
                     },
                     "required": []
