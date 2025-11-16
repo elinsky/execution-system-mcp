@@ -83,7 +83,7 @@ class Auditor:
         issues = []
 
         # Scan all project folders
-        for folder in ["active", "incubator", "completed", "descoped"]:
+        for folder in ["active", "incubator", "someday-maybe", "completed", "descoped"]:
             folder_path = projects_base / folder
             if not folder_path.exists():
                 continue
@@ -255,7 +255,7 @@ class Auditor:
 
         # Collect all project filenames
         all_project_filenames = set()
-        for folder in ["active", "incubator", "completed", "descoped"]:
+        for folder in ["active", "incubator", "someday-maybe", "completed", "descoped"]:
             folder_path = projects_base / folder
             if not folder_path.exists():
                 continue
@@ -420,7 +420,7 @@ class Auditor:
 
         projects_needing_review = []
 
-        for folder in ["active", "incubator", "completed"]:
+        for folder in ["active", "incubator", "someday-maybe", "completed"]:
             folder_path = projects_base / folder
             if not folder_path.exists():
                 continue

@@ -55,7 +55,7 @@ class Searcher:
     def search_projects(
         self,
         query: str,
-        folder: Literal["active", "incubator", "completed", "all"] = "all",
+        folder: Literal["active", "incubator", "someday-maybe", "completed", "all"] = "all",
         filter_area: str | None = None
     ) -> dict:
         """
@@ -86,7 +86,7 @@ class Searcher:
 
         # Determine which folders to search
         if folder == "all":
-            folders = ["active", "incubator", "completed", "descoped"]
+            folders = ["active", "incubator", "someday-maybe", "completed", "descoped"]
         else:
             folders = [folder]
 

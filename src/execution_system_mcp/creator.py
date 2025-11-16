@@ -65,7 +65,7 @@ class ProjectCreator:
             area: Area of focus
             title: Project title
             project_type: Type of project
-            folder: Target folder (active or incubator)
+            folder: Target folder (active, incubator, or someday-maybe)
             due: Optional due date in YYYY-MM-DD format
 
         Returns:
@@ -113,7 +113,7 @@ class ProjectCreator:
             title: Project title
             area: Area of focus
             project_type: Type of project (standard, habit, coordination)
-            folder: Target folder (active or incubator)
+            folder: Target folder (active, incubator, or someday-maybe)
             due: Optional due date in YYYY-MM-DD format
 
         Returns:

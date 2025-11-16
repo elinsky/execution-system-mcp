@@ -37,7 +37,7 @@ class ProjectManager:
         repo_path = Path(self._config.get_repo_path())
         projects_base = repo_path / "docs" / "execution_system" / "10k-projects"
 
-        folders_to_search = [expected_folder] if expected_folder else ["active", "incubator", "completed"]
+        folders_to_search = [expected_folder] if expected_folder else ["active", "incubator", "someday-maybe", "completed"]
 
         for folder in folders_to_search:
             folder_path = projects_base / folder
@@ -219,9 +219,9 @@ class ProjectManager:
 
         return f"✓ Successfully moved project '{title}' to incubator (removed started date)"
 
-    def descope_project(self, title: str) -> str:
+    def move_project_to_someday_maybe(self, title: str) -> str:
         """
-        Move project to descoped folder.
+        Move project to someday-maybe folder.
 
         Args:
             title: Project title (exact match)
@@ -234,6 +234,47 @@ class ProjectManager:
 
         if not project_file or folder not in ["active", "incubator"]:
             return f"Error: Project '{title}' not found in active or incubator folders"
+
+        # Check for 0k blockers (any actions)
+        project_filename = project_file.stem
+        blockers = self._completer.check_0k_blockers(project_filename)
+
+        if blockers:
+            return f"Error: Project '{title}' has incomplete 0k actions. Must complete or remove all actions before moving to someday-maybe. Found {len(blockers)} blocking items."
+
+        # Get area from file path
+        area_kebab = project_file.parent.name
+
+        # Create target path
+        repo_path = Path(self._config.get_repo_path())
+        someday_maybe_dir = repo_path / "docs" / "execution_system" / "10k-projects" / "someday-maybe" / area_kebab
+        someday_maybe_dir.mkdir(parents=True, exist_ok=True)
+
+        target_file = someday_maybe_dir / project_file.name
+
+        # Move file using git mv to preserve history
+        git_move(project_file, target_file)
+
+        # Remove started date
+        self._update_frontmatter(target_file, {}, removals=["started"])
+
+        return f"✓ Successfully moved project '{title}' to someday-maybe (removed started date)"
+
+    def descope_project(self, title: str) -> str:
+        """
+        Move project to descoped folder.
+
+        Args:
+            title: Project title (exact match)
+
+        Returns:
+            Success or error message
+        """
+        # Find project in active, incubator, or someday-maybe
+        project_file, folder = self._find_project_file(title)
+
+        if not project_file or folder not in ["active", "incubator", "someday-maybe"]:
+            return f"Error: Project '{title}' not found in active, incubator, or someday-maybe folders"
 
         # Check for 0k blockers (any actions)
         project_filename = project_file.stem
@@ -359,7 +400,7 @@ class ProjectManager:
     def update_review_dates(
         self,
         target_type: Literal["projects", "actions", "all"] = "projects",
-        filter_folder: Literal["active", "incubator", "all"] | None = None,
+        filter_folder: Literal["active", "incubator", "someday-maybe", "all"] | None = None,
         filter_area: str | None = None,
         filter_names: list[str] | None = None
     ) -> str:
@@ -386,7 +427,7 @@ class ProjectManager:
             # Determine folders to scan
             folders = []
             if filter_folder == "all" or filter_folder is None:
-                folders = ["active", "incubator"]
+                folders = ["active", "incubator", "someday-maybe"]
             else:
                 folders = [filter_folder]
 

@@ -230,7 +230,7 @@ class ProjectLister:
 
     def list_projects(
         self,
-        folder: Literal["active", "incubator", "completed", "all"] = "active",
+        folder: Literal["active", "incubator", "someday-maybe", "completed", "all"] = "active",
         group_by: Literal["area", "due_date", "flat"] = "area",
         filter_area: str | None = None,
         filter_has_due: bool | None = None,
@@ -279,7 +279,7 @@ class ProjectLister:
         # Determine which folders to scan
         folders_to_scan = []
         if folder == "all":
-            folders_to_scan = ["active", "incubator", "completed"]
+            folders_to_scan = ["active", "incubator", "someday-maybe", "completed"]
         else:
             folders_to_scan = [folder]
 

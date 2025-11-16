@@ -269,6 +269,31 @@ def move_project_to_incubator_handler(params: dict, config_path: str | None = No
         return f"Error: {str(e)}"
 
 
+def move_project_to_someday_maybe_handler(params: dict, config_path: str | None = None) -> str:
+    """
+    Handle move_project_to_someday_maybe tool invocation.
+
+    Args:
+        params: Tool parameters (title)
+        config_path: Optional path to config file (for testing)
+
+    Returns:
+        Success or error message
+    """
+    try:
+        config = ConfigManager(config_path)
+        manager = ProjectManager(config)
+        title = params.get("title")
+
+        if not title:
+            return "Error: Missing required parameter (title)"
+
+        return manager.move_project_to_someday_maybe(title)
+
+    except Exception as e:
+        return f"Error: {str(e)}"
+
+
 def descope_project_handler(params: dict, config_path: str | None = None) -> str:
     """
     Handle descope_project tool invocation.
@@ -838,7 +863,7 @@ async def main():
                         },
                         "folder": {
                             "type": "string",
-                            "enum": ["active", "incubator"],
+                            "enum": ["active", "incubator", "someday-maybe"],
                             "description": "Target folder (active projects include 'started' date)"
                         },
                         "due": {
@@ -881,7 +906,7 @@ async def main():
                     "properties": {
                         "folder": {
                             "type": "string",
-                            "enum": ["active", "incubator", "completed", "all"],
+                            "enum": ["active", "incubator", "someday-maybe", "completed", "all"],
                             "description": "Which folder(s) to list projects from (default: active)"
                         },
                         "group_by": {
@@ -976,6 +1001,20 @@ async def main():
                 }
             ),
             Tool(
+                name="move_project_to_someday_maybe",
+                description="Move a project to someday-maybe folder. Removes 'started' date from project YAML. Validates that project has NO incomplete 0k actions (next, waiting, deferred, or incubating) - all actions must be complete or removed first.",
+                inputSchema={
+                    "type": "object",
+                    "properties": {
+                        "title": {
+                            "type": "string",
+                            "description": "Project title (exact match, case-sensitive)"
+                        }
+                    },
+                    "required": ["title"]
+                }
+            ),
+            Tool(
                 name="descope_project",
                 description="Move a project to descoped folder (archives project as out-of-scope). Adds 'descoped' date and removes 'started' date. Validates that project has NO incomplete 0k actions - all actions must be complete or removed first. Creates descoped/{area}/ folder if needed.",
                 inputSchema={
@@ -1058,7 +1097,7 @@ async def main():
                         },
                         "filter_folder": {
                             "type": "string",
-                            "enum": ["active", "incubator", "all"],
+                            "enum": ["active", "incubator", "someday-maybe", "all"],
                             "description": "For projects: which folder(s) to update (default: all folders)"
                         },
                         "filter_area": {
@@ -1150,7 +1189,7 @@ async def main():
                         },
                         "folder": {
                             "type": "string",
-                            "enum": ["active", "incubator", "completed", "all"],
+                            "enum": ["active", "incubator", "someday-maybe", "completed", "all"],
                             "description": "Which folder(s) to search (default: all)"
                         },
                         "filter_area": {
@@ -1378,6 +1417,9 @@ async def main():
             return [TextContent(type="text", text=result)]
         elif name == "move_project_to_incubator":
             result = move_project_to_incubator_handler(arguments, config_path)
+            return [TextContent(type="text", text=result)]
+        elif name == "move_project_to_someday_maybe":
+            result = move_project_to_someday_maybe_handler(arguments, config_path)
             return [TextContent(type="text", text=result)]
         elif name == "descope_project":
             result = descope_project_handler(arguments, config_path)

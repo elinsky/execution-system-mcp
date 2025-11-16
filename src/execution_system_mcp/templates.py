@@ -37,12 +37,17 @@ class TemplateEngine:
 
         Args:
             title: Project title
-            folder: Target folder (active or incubator)
+            folder: Target folder (active, incubator, or someday-maybe)
 
         Returns:
             Markdown template string
         """
-        status = "Active" if folder == "active" else "Incubating"
+        if folder == "active":
+            status = "Active"
+        elif folder == "someday-maybe":
+            status = "Someday/Maybe"
+        else:
+            status = "Incubating"
 
         return f"""# {title}
 
@@ -111,7 +116,7 @@ class TemplateEngine:
         Args:
             project_type: Type of project (standard, habit, coordination)
             title: Project title
-            folder: Target folder (active or incubator)
+            folder: Target folder (active, incubator, or someday-maybe)
 
         Returns:
             Markdown template string
